@@ -312,12 +312,12 @@ __webpack_require__.r(__webpack_exports__);
 
 var fetchFeed = Object(lodash__WEBPACK_IMPORTED_MODULE_8__["debounce"])( /*#__PURE__*/function () {
   var _ref2 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_2___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.mark(function _callee(_ref) {
-    var id, didCancel, setFeed, setLoading, response;
+    var id, didCancel, setData, setLoading, response;
     return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
-            id = _ref.id, didCancel = _ref.didCancel, setFeed = _ref.setFeed, setLoading = _ref.setLoading;
+            id = _ref.id, didCancel = _ref.didCancel, setData = _ref.setData, setLoading = _ref.setLoading;
             setLoading(true);
             _context.next = 4;
             return _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_6___default()({
@@ -328,7 +328,7 @@ var fetchFeed = Object(lodash__WEBPACK_IMPORTED_MODULE_8__["debounce"])( /*#__PU
             response = _context.sent;
 
             if (!didCancel) {
-              setFeed(response);
+              setData(response);
               setLoading(false);
             }
 

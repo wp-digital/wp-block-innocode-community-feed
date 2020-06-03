@@ -12,7 +12,7 @@ import { debounce } from 'lodash';
 const fetchFeed = debounce( async ( {
 	id,
 	didCancel,
-	setFeed,
+    setData,
 	setLoading,
 } ) => {
 	setLoading(true);
@@ -22,7 +22,7 @@ const fetchFeed = debounce( async ( {
 	} );
 
 	if (!didCancel) {
-		setFeed(response);
+		setData(response);
 		setLoading(false);
 	}
 }, 800 );
