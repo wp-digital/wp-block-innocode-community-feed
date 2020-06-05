@@ -16,7 +16,6 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import Edit from './edit';
-import save from './save';
 
 /**
  * Every block starts by registering a new block type definition.
@@ -61,7 +60,8 @@ registerBlockType( 'innocode/community-feed', {
 
 	attributes: {
 		id: {
-			type: 'number',
+			type: 'integer',
+			default: 0,
 		},
 	},
 
@@ -69,9 +69,4 @@ registerBlockType( 'innocode/community-feed', {
 	 * @see ./edit.js
 	 */
 	edit: Edit,
-
-	/**
-	 * @see ./save.js
-	 */
-	save,
 } );

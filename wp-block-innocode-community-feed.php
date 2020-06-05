@@ -52,10 +52,33 @@ function innocode_community_feed_block_init() {
 		filemtime( "$dir/$style_css" )
 	);
 
-	register_block_type( 'innocode/community-feed', array(
-		'editor_script' => 'innocode-community-feed-block-editor',
-		'editor_style'  => 'innocode-community-feed-block-editor',
-		'style'         => 'innocode-community-feed-block',
-	) );
+	register_block_type( 'innocode/community-feed', [
+		'editor_script'   => 'innocode-community-feed-block-editor',
+		'editor_style'    => 'innocode-community-feed-block-editor',
+		'style'           => 'innocode-community-feed-block',
+		'render_callback' => function ( array $attributes ) {
+			if ( ! isset( $attributes['id'] ) ) {
+				return '';
+			}
+
+			$attributes['id'] = (int) $attributes['id'];
+
+			static $block_id = 0;
+
+			$id = 'innocode_community_feed-' . ++$block_id;
+
+			return sprintf(
+				"<div id=\"%s-block\" class=\"innocode_community_feed\"></div>
+<script>
+window.innocodeCommunity = window.innocodeCommunity || {};
+window.innocodeCommunity.blocks = window.innocodeCommunity.blocks || {};
+window.innocodeCommunity.blocks['%s'] = %s;
+</script>",
+				esc_attr( $id ),
+				esc_attr( $id ),
+				json_encode( $attributes )
+			);
+		},
+	] );
 }
 add_action( 'init', 'innocode_community_feed_block_init' );

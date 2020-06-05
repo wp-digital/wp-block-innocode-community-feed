@@ -4,28 +4,46 @@
  * @see https://developer.wordpress.org/block-editor/packages/packages-i18n/
  */
 import { __ } from '@wordpress/i18n';
-import { TextControl } from '@wordpress/components';
+import {
+	Button,
+	Placeholder,
+	Spinner,
+	TextControl,
+	ToolbarGroup,
+} from '@wordpress/components';
+import { BlockControls } from '@wordpress/block-editor';
+import { pencil } from '@wordpress/icons';
 import apiFetch from '@wordpress/api-fetch';
 import { useState, useEffect } from 'react';
-import { debounce } from 'lodash';
 
-const fetchFeed = debounce( async ( {
-	id,
-	didCancel,
-    setData,
-	setLoading,
+const fetchFeed = async ( {
+	attributes,
+	isRequesting,
+	setRequesting,
+	didUnmount,
+	setData,
 } ) => {
-	setLoading(true);
+	if ( isRequesting ) {
+		return;
+	}
+
+	const { id } = attributes;
+
+	if ( ! id ) {
+		return;
+	}
+
+	setRequesting( true );
 
 	const response = await apiFetch( {
 		path: `/innocode/v1/community/feeds/${ id }`,
 	} );
 
-	if (!didCancel) {
-		setData(response);
-		setLoading(false);
+	if ( ! didUnmount ) {
+		setData( response );
+		setRequesting( false );
 	}
-}, 800 );
+};
 
 /**
  * The edit function describes the structure of your block in the context of the
@@ -38,50 +56,84 @@ const fetchFeed = debounce( async ( {
  * @return {WPElement} Element to render.
  */
 export default function Edit( { className, attributes, setAttributes } ) {
-	const [ id, setId ] = useState( attributes.id );
 	const [ data, setData ] = useState( {} );
-	const [ isLoading, setLoading ] = useState( false );
-	const onChangeFeed = ( value ) => setId( value );
+	const [ isRequesting, setRequesting ] = useState( false );
+	const [ didUnmount, setDidUnmount ] = useState( false );
+
+	const onChangeFeed = ( value ) => setAttributes( { id: parseInt( value, 10 ) } );
+
+	const onSubmitFeed = async ( event ) => {
+		event.preventDefault();
+		await fetchFeed( {
+			attributes,
+			isRequesting,
+			setRequesting,
+			didUnmount,
+			setData,
+		} );
+	};
 
 	useEffect( () => {
-		let didCancel = false;
-
-		setAttributes( { id } );
-
-		if ( id ) {
-			fetchFeed( {
-				id,
-				didCancel,
+		const initialFetchFeed = async () => {
+			await fetchFeed( {
+				attributes,
+				isRequesting,
+				setRequesting,
+				didUnmount,
 				setData,
-				setLoading,
 			} );
-		}
+		};
+
+		initialFetchFeed();
 
 		return () => {
-			didCancel = true;
+			setDidUnmount( true );
 		};
-	}, [ id ] );
+	}, [] );
 
-	// @TODO: render feed
+	// @TODO: render feed based on 'data' object
+	console.log(data);
+
+	if ( isRequesting ) {
+		return (
+			<div className="is-loading">
+				<Spinner />
+				<p>{ __( 'Inserting…', 'innocode-community-feed' ) }</p>
+			</div>
+		);
+	}
 
 	return (
 		<>
-			<div
-				className={ className }
-			>
-				<TextControl
-					label={ __( 'Feed', 'innocode-community-feed' ) }
-					type="number"
-					value={ id }
-					onChange={ onChangeFeed }
+			<BlockControls>
+				<ToolbarGroup>
+					<Button
+						className="components-toolbar__control"
+						label={ __( 'Edit Feed', 'innocode-community-feed' ) }
+						icon={ pencil }
+					/>
+				</ToolbarGroup>
+			</BlockControls>
+			<Placeholder>
+				<form method="post" onSubmit={ onSubmitFeed }>
+					<TextControl
+						label={ __( 'Feed', 'innocode-community-feed' ) }
+						type="number"
+						value={ attributes.id }
+						className="components-placeholder__input"
+						onChange={ onChangeFeed }
+					/>
+					<Button isPrimary type="submit">
+						{ __( 'Insert', 'innocode-community-feed' ) }
+					</Button>
+				</form>
+			</Placeholder>
+			{ ! isRequesting && (
+				<div
+					id={ `innocode_community_feed-${ attributes.id }-block` }
+					className={`${ className } innocode_community_feed`}
 				/>
-			</div>
-			<div
-				id={ `innocode_community_feed-${ id }-root` }
-				className="innocode_community_feed"
-			>
-				{isLoading && __( 'Loading...', 'innocode-community-feed' )}
-			</div>
+			) }
 		</>
 	);
 }
